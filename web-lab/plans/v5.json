@@ -1,0 +1,131 @@
+{
+  "name": "v5：第4天宣傳500、依來客重算備貨填滿80份、紅茶35",
+  "pack": "official",
+  "days": [
+    {
+      "items": [
+        {
+          "name": "招牌鍋貼",
+          "qty": 18,
+          "price": 60
+        },
+        {
+          "name": "玉米鍋貼",
+          "qty": 6,
+          "price": 80
+        },
+        {
+          "name": "酸辣湯",
+          "qty": 6,
+          "price": 45
+        },
+        {
+          "name": "紅茶",
+          "qty": 16,
+          "price": 35
+        }
+      ],
+      "promoCost": 0
+    },
+    {
+      "items": [
+        {
+          "name": "招牌鍋貼",
+          "qty": 18,
+          "price": 60
+        },
+        {
+          "name": "玉米鍋貼",
+          "qty": 11,
+          "price": 80
+        },
+        {
+          "name": "酸辣湯",
+          "qty": 18,
+          "price": 35
+        },
+        {
+          "name": "紅茶",
+          "qty": 16,
+          "price": 35
+        }
+      ],
+      "promoCost": 0
+    },
+    {
+      "items": [
+        {
+          "name": "招牌鍋貼",
+          "qty": 44,
+          "price": 90
+        },
+        {
+          "name": "玉米鍋貼",
+          "qty": 12,
+          "price": 100
+        },
+        {
+          "name": "酸辣湯",
+          "qty": 12,
+          "price": 45
+        },
+        {
+          "name": "豆漿",
+          "qty": 12,
+          "price": 35
+        }
+      ],
+      "promoCost": 500
+    },
+    {
+      "items": [
+        {
+          "name": "招牌鍋貼",
+          "qty": 34,
+          "price": 60
+        },
+        {
+          "name": "玉米鍋貼",
+          "qty": 21,
+          "price": 80
+        },
+        {
+          "name": "酸辣湯",
+          "qty": 11,
+          "price": 35
+        },
+        {
+          "name": "紅茶",
+          "qty": 14,
+          "price": 35
+        }
+      ],
+      "promoCost": 500
+    },
+    {
+      "items": [
+        {
+          "name": "招牌鍋貼",
+          "qty": 17,
+          "price": 90
+        },
+        {
+          "name": "玉米鍋貼",
+          "qty": 23,
+          "price": 100
+        },
+        {
+          "name": "酸辣湯",
+          "qty": 23,
+          "price": 45
+        },
+        {
+          "name": "豆漿",
+          "qty": 17,
+          "price": 35
+        }
+      ],
+      "promoCost": 0
+    }
+  ]
+}
