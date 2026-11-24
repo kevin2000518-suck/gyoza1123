@@ -112,6 +112,19 @@
   font-weight: 800;
 }
 
+/* 升級商店 */
+.gs-upgrade-item {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.gs-upgrade .gs-notice { display: inline-block; margin-bottom: 12px; }
+.gs-upgrade-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.gs-upgrade-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* 客人包 */
 .gs-pack-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .gs-pack-row label { font-weight: 800; }
