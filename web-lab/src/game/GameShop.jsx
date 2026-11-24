@@ -4,9 +4,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { MENU, findDish } from './menu.js';
-import { DAYS, DAILY_CAPACITY, MAX_SLOTS, PROMO_OPTIONS } from './config.js';
+import { DAYS, MAX_SLOTS, PROMO_OPTIONS, POT_UPGRADE } from './config.js';
 import { getDayData } from './days.js';
-import { newGame, simulateDay, summarize, isFinished } from './engine.js';
+import { newGame, simulateDay, summarize, isFinished, buyPot, capacityOf } from './engine.js';
 import { validatePlan, planCost, formatMoney } from './validatePlan.js';
 import { validateCustomers } from './validateCustomers.js';
 import { PACKS } from './packs.js';
@@ -163,7 +163,42 @@ function PackPicker({ packId, setPackId, locked, importedPack, onImport, packErr
   );
 }
 
-function PlanForm({ draft, setDraft, promoCost, setPromoCost, cash }) {
+function UpgradeShop({ game, canBuyNow, onBuy, onClose }) {
+  const check = buyPot(game);
+  let reason = '';
+  if (game.hasPot) reason = '已購買';
+  else if (!canBuyNow) reason = '只能在開店前（按「開始營業」之前）購買';
+  else if (!check.ok) reason = check.reason;
+
+  return (
+    <section className="gs-card gs-upgrade" data-testid="upgrade-panel" aria-label="升級商店">
+      <h3>升級商店</h3>
+      <article className="gs-upgrade-item">
+        <strong>新鍋子</strong>
+        <span data-testid="upgrade-price">{formatMoney(POT_UPGRADE.cost)} 元</span>
+        <small>
+          每天產能 80 → {POT_UPGRADE.capacity} 份，從今天到第 {DAYS} 天都有效。每一場只能買一次，買了不能退。
+        </small>
+      </article>
+      <p className="gs-hint">目前資金 {formatMoney(game.cash)} 元</p>
+      {reason && (
+        <p className="gs-notice" role="status" data-testid="upgrade-status">
+          {reason}
+        </p>
+      )}
+      <div className="gs-upgrade-actions">
+        <button type="button" className="gs-primary" data-testid="upgrade-buy" disabled={Boolean(reason)} onClick={onBuy}>
+          購買
+        </button>
+        <button type="button" className="gs-ghost" data-testid="upgrade-close" onClick={onClose}>
+          關閉
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function PlanForm({ draft, setDraft, promoCost, setPromoCost, cash, capacity }) {
   const plan = draftToPlan(draft, promoCost);
   const { stockCost, total } = planCost(plan);
   const totalQty = plan.items.reduce((s, i) => s + (Number.isFinite(i.qty) ? i.qty : 0), 0);
@@ -176,7 +211,7 @@ function PlanForm({ draft, setDraft, promoCost, setPromoCost, cash }) {
     <section className="gs-card">
       <h3>今日決定</h3>
       <p className="gs-hint">
-        最多上架 {MAX_SLOTS} 樣（已選 {plan.items.length} 樣）・合計份數 {totalQty}／{DAILY_CAPACITY}
+        最多上架 {MAX_SLOTS} 樣（已選 {plan.items.length} 樣）・合計份數 <span data-testid="capacity-hint">{totalQty}／{capacity}</span>
       </p>
       <div className="gs-dishes">
         {MENU.map((dish) => {
@@ -371,6 +406,7 @@ export default function GameShop({ onProgress }) {
   const [shown, setShown] = useState(0);
   const [jumpDay, setJumpDay] = useState(1);
   const [notice, setNotice] = useState('');
+  const [shopOpen, setShopOpen] = useState(false);
 
   const pack = packId === 'imported' ? importedPack : PACKS.find((p) => p.id === packId)?.data;
   const packCheck = useMemo(() => validateCustomers(pack ?? []), [pack]);
@@ -381,7 +417,9 @@ export default function GameShop({ onProgress }) {
       : packCheck.errors;
 
   const plan = draftToPlan(draft, promoCost);
-  const planErrors = validatePlan(plan, game.cash);
+  const capacity = capacityOf(game);
+  const planErrors = validatePlan(plan, game.cash, capacity);
+  const canBuyNow = phase === 'plan' && !isFinished(game);
   const locked = game.history.length > 0 || phase !== 'plan';
   const dayData = isFinished(game) ? null : getDayData(game.day);
 
@@ -424,6 +462,18 @@ export default function GameShop({ onProgress }) {
     setReport(null);
     setShown(0);
     setNotice('');
+    setShopOpen(false);
+  }
+
+  function handleBuyPot() {
+    if (!canBuyNow) return;
+    const result = buyPot(game);
+    if (!result.ok) {
+      setNotice(result.reason);
+      return;
+    }
+    setGame(result.state);
+    setNotice(`已購買新鍋子，每天產能變成 ${POT_UPGRADE.capacity} 份`);
   }
 
   function handleImport(parsed) {
@@ -466,9 +516,10 @@ export default function GameShop({ onProgress }) {
           type="button"
           className="gs-ghost"
           data-testid="upgrade-shop"
-          onClick={() => setNotice('升級商店尚未開放')}
+          aria-expanded={shopOpen}
+          onClick={() => setShopOpen((open) => !open)}
         >
-          升級商店
+          升級商店{game.hasPot ? '（已購買新鍋子）' : ''}
         </button>
         {notice && (
           <span className="gs-notice" role="status">
@@ -476,6 +527,10 @@ export default function GameShop({ onProgress }) {
           </span>
         )}
       </section>
+
+      {shopOpen && (
+        <UpgradeShop game={game} canBuyNow={canBuyNow} onBuy={handleBuyPot} onClose={() => setShopOpen(false)} />
+      )}
 
       <PackPicker
         packId={packId}
@@ -500,6 +555,7 @@ export default function GameShop({ onProgress }) {
             promoCost={promoCost}
             setPromoCost={setPromoCost}
             cash={game.cash}
+            capacity={capacity}
           />
 
           {planErrors.length > 0 && (

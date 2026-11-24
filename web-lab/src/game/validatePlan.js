@@ -17,7 +17,8 @@ export function planCost(plan) {
   return { stockCost, total: stockCost + (plan.promoCost || 0) };
 }
 
-export function validatePlan(plan, cash) {
+// capacity：今天最多備幾份；不傳就是 80（買了新鍋子時由畫面傳 90）
+export function validatePlan(plan, cash, capacity = DAILY_CAPACITY) {
   const errors = [];
   const items = plan.items;
 
@@ -45,8 +46,8 @@ export function validatePlan(plan, cash) {
     }
   }
 
-  if (totalQty > DAILY_CAPACITY) {
-    errors.push(`今天合計 ${totalQty} 份，超過每日產能 ${DAILY_CAPACITY} 份`);
+  if (totalQty > capacity) {
+    errors.push(`今天合計 ${totalQty} 份，超過每日產能 ${capacity} 份`);
   }
 
   const promoOk = PROMO_OPTIONS.some((p) => p.cost === plan.promoCost);

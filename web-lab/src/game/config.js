@@ -10,6 +10,9 @@ export const MAX_STARS = 5;
 export const MAX_SLOTS = 4; // 每天最多上架幾樣菜
 export const DAILY_CAPACITY = 80; // 每天所有菜合計最多備幾份
 
+// 升級商店：新鍋子（回家作業，見 docs/specs/upgrade-shop.md）
+export const POT_UPGRADE = { cost: 800, capacity: 90 };
+
 // 宣傳費：cost 是花多少錢，pct 是客人人數增加幾 %
 export const PROMO_OPTIONS = [
   { cost: 0, pct: 0 },

@@ -5,7 +5,7 @@
 // 這裡全部是純函式：不讀寫檔案、不存檔、不用亂數，
 // 所以同樣的輸入一定得到同樣的結果，全班可以一起核對。
 
-import { START_CASH, START_STARS, DAYS, JUMP_START, PROMO_OPTIONS, starPct } from './config.js';
+import { START_CASH, START_STARS, DAYS, JUMP_START, PROMO_OPTIONS, DAILY_CAPACITY, POT_UPGRADE, starPct } from './config.js';
 import { findDish, dishIdByName } from './menu.js';
 import { getDayData } from './days.js';
 import { tryBuy } from './rules/sales.js';
@@ -18,9 +18,25 @@ import { checkDish, suggestQty } from './rules/inventory.js';
 // 開新的一場。mode = 'normal'（正式）或 'jump'（跳關練習，不列入排行榜）
 export function newGame({ mode = 'normal', startDay = 1 } = {}) {
   if (mode === 'jump') {
-    return { mode, day: startDay, cash: JUMP_START.cash, stars: JUMP_START.stars, history: [] };
+    return { mode, day: startDay, cash: JUMP_START.cash, stars: JUMP_START.stars, history: [], hasPot: false };
   }
-  return { mode: 'normal', day: 1, cash: START_CASH, stars: START_STARS, history: [] };
+  return { mode: 'normal', day: 1, cash: START_CASH, stars: START_STARS, history: [], hasPot: false };
+}
+
+// 升級商店：這一場每天最多備幾份（買了新鍋子是 90，沒買是 80）
+export function capacityOf(state) {
+  return state.hasPot ? POT_UPGRADE.capacity : DAILY_CAPACITY;
+}
+
+// 升級商店：買新鍋子。成功回傳 { ok: true, state: 新狀態 }，失敗回傳 { ok: false, reason }
+// 只負責錢與是否買過；「只能在開店前買」由畫面判斷
+export function buyPot(state) {
+  if (isFinished(state)) return { ok: false, reason: '五天已經結束' };
+  if (state.hasPot) return { ok: false, reason: '已購買' };
+  if (state.cash < POT_UPGRADE.cost) {
+    return { ok: false, reason: `資金不足（需要 ${POT_UPGRADE.cost} 元，目前 ${state.cash} 元）` };
+  }
+  return { ok: true, state: { ...state, cash: state.cash - POT_UPGRADE.cost, hasPot: true } };
 }
 
 export function isFinished(state) {
